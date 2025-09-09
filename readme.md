@@ -5,7 +5,7 @@
 - подключить `rombus-list.js`:
 
 ```html
-<script type="module" src="./js/rombus-list.js?v=1.0.0"></script>
+<script type="module" src="./js/rombus-list.js?v=1.1.0"></script>
 ```
 
 - создать в HTML кастомный элемент `<rombus-list></rombus-list>`:
@@ -32,5 +32,26 @@
 </rombus-list>
 ```
 
+- для дополнительной стилизации (задания произвольных цветов) фона ромба, номера, жирности, рамки, а также ширины наличия рамки и её ширины, использутся атрибуты `start` `bg-color` `text-color` `border-color` `border`, например:
+```html
+<!-- Кастомные цвета -->
+<rombus-list start="5" bg-color="#e3f2fd" text-color="#d32f2f" border-color="#c62828" font-weight="700">
+    <li><span style="color:red;">Красный акцент</span></li>
+    <li>Цифра красная, фон светло-синий</li>
+</rombus-list>
+
+<!-- Без рамки -->
+<rombus-list start="10" bg-color="#ffeb3b" text-color="#333" border="false">
+    <li>Жёлтый ромб без рамки</li>
+    <li>Современный минимализм</li>
+</rombus-list>
+
+<!-- Тёмный режим -->
+<rombus-list start="20" bg-color="#616161" text-color="#fff" border-color="#424242" font-weight="700">
+    <li>Тёмно-серый ромб</li>
+    <li>Белый текст</li>
+</rombus-list>
+```
+
 Пример оформления (скриншот):
-![1757439026917](image/readme/1757439026917.png)
+![1757440074465](image/readme/1757440074465.png)

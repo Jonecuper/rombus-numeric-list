@@ -2,7 +2,7 @@
 
 class RombusList extends HTMLElement {
     static get observedAttributes() {
-        return ['start'];
+        return ['start', 'bg-color', 'text-color', 'border-color', 'border', 'font-weight' ];
     }
 
     constructor() {
@@ -21,13 +21,23 @@ class RombusList extends HTMLElement {
         }
     }
 
-    async render() {
+    getAttributeOrFallback(attr, fallback) {
+        const value = this.getAttribute(attr);
+        return value !== null ? value.trim() : fallback;
+    }
+
+    render() {
         const start = parseInt(this.getAttribute('start')) || 1;
+        const bgColor = this.getAttributeOrFallback('bg-color', '#F0F8FE');
+        const textColor = this.getAttributeOrFallback('text-color', '#007fbe');
+        const borderColor = this.getAttributeOrFallback('border-color', '#007fbd');
+        const hasBorder = this.getAttributeOrFallback('border', 'true') === 'true';
+        const fontWeight = this.getAttributeOrFallback('font-weight', '300');
 
         // Очищаем shadow DOM
         this.shadowRoot.innerHTML = '';
 
-        // Встраиваем CSS напрямую в Shadow DOM
+        // Встраиваем стили
         const style = document.createElement('style');
         style.textContent = `
             :host {
@@ -58,12 +68,13 @@ class RombusList extends HTMLElement {
                 height: 45px;
                 line-height: 45px;
                 text-align: center;
-                background: #F0F8FE;
+                background: ${bgColor};
                 border-radius: 5px;
-                border: #007fbd 1px solid;
+                ${hasBorder ? `border: 1px solid ${borderColor};` : 'border: none;'}
                 transform: rotate(45deg);
-                color: #007fbe;
-                font-family: 'Rubik', 'Segoe UI', sans-serif;                
+                color: ${textColor};
+                font-family: 'Rubik', 'Segoe UI', sans-serif;
+                font-weight: ${fontWeight};
                 display: block;
             }
 
@@ -118,4 +129,5 @@ class RombusList extends HTMLElement {
     }
 }
 
+// Регистрируем элемент
 customElements.define('rombus-list', RombusList);
