@@ -1,58 +1,121 @@
-// Уникальный ID, чтобы не подключать CSS дважды
-const CSS_ID = 'romb-ol-styles';
-// const CSS_PATH = './../css/rombus-list.css'; // путь к CSS
-// Получаем путь к текущему JS-файлу
-const currentDir = new URL('.', import.meta.url).pathname;
+// rombus-list.js
 
-// Формируем путь к CSS относительно текущего файла
-// Например: /project/js/ -> /project/css/
-const CSS_PATH = currentDir.replace(/js\/?$/, 'css/') + 'rombus-list.css';
-
-async function loadCSS() {
-    // Проверяем, не загружен ли уже CSS
-    if (document.head.querySelector(`#${CSS_ID}`)) {
-        return;
+class RombusList extends HTMLElement {
+    static get observedAttributes() {
+        return ['start'];
     }
 
-    // Создаём <link>
-    const link = document.createElement('link');
-    link.id = CSS_ID;
-    link.rel = 'stylesheet';
-    link.href = CSS_PATH;
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+    }
 
-    // Добавляем в <head>
-    document.head.appendChild(link);
+    connectedCallback() {
+        this.render();
+        this.observeListChanges();
+    }
 
-    // Ждём, пока CSS загрузится
-    await new Promise((resolve, reject) => {
-        link.onload = resolve;
-        link.onerror = () => reject(new Error(`Не удалось загрузить ${CSS_PATH}`));
-    });
-}
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue !== newValue) {
+            this.render();
+        }
+    }
 
-// Основная функция инициализации
-export async function initRombusLists() {
-    await loadCSS(); // Сначала загружаем стили
+    async render() {
+        const start = parseInt(this.getAttribute('start')) || 1;
 
-    document.querySelectorAll('ol.romb-ol').forEach(list => {
-        const start = parseInt(list.dataset.start) || 1;
-        list.style.setProperty('--start', start);
+        // Очищаем shadow DOM
+        this.shadowRoot.innerHTML = '';
 
-        // Удаляем старые иконки
-        list.querySelectorAll('.romb-ol__step-icon').forEach(icon => icon.remove());
+        // Встраиваем CSS напрямую в Shadow DOM
+        const style = document.createElement('style');
+        style.textContent = `
+            :host {
+                display: block;
+                font-family: var(--font-family, 'Segoe UI', sans-serif);
+                line-height: 1.5;
+            }
 
-        // Добавляем ромб в каждый <li>
-        list.querySelectorAll('li').forEach(li => {
-            const icon = document.createElement('span');
-            icon.className = 'romb-ol__step-icon';
-            li.prepend(icon);
+            ol {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                counter-reset: step-counter calc(${start} - 1);
+            }
+
+            ol > li {
+                display: grid;
+                grid-template-columns: 60px 1fr;
+                gap: 10px;
+                align-items: center;
+                margin-bottom: 2rem;
+            }
+
+            .romb-ol__step-icon {
+                counter-increment: step-counter;
+                position: relative;
+                width: 45px;
+                height: 45px;
+                line-height: 45px;
+                text-align: center;
+                background: #F0F8FE;
+                border-radius: 5px;
+                border: #007fbd 1px solid;
+                transform: rotate(45deg);
+                color: #007fbe;
+                font-family: 'Rubik', 'Segoe UI', sans-serif;                
+                display: block;
+            }
+
+            .romb-ol__step-icon::after {
+                content: counter(step-counter);
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(-45deg);
+                width: 100%;
+                text-align: center;
+                font-size: 1em;
+                line-height: 1;
+            }
+        `;
+        this.shadowRoot.appendChild(style);
+
+        // Создаём <ol>
+        const ol = document.createElement('ol');
+
+        // Копируем <li> из light DOM
+        this.childNodes.forEach(node => {
+            if (node.nodeType === Node.ELEMENT_NODE && node.tagName.toLowerCase() === 'li') {
+                const li = document.createElement('li');
+
+                const icon = document.createElement('span');
+                icon.className = 'romb-ol__step-icon';
+                li.appendChild(icon);
+
+                // Клонируем содержимое <li>
+                Array.from(node.childNodes).forEach(child => {
+                    li.appendChild(child.cloneNode(true));
+                });
+
+                ol.appendChild(li);
+            }
         });
-    });
+
+        this.shadowRoot.appendChild(ol);
+    }
+
+    observeListChanges() {
+        const observer = new MutationObserver(() => {
+            this.render();
+        });
+
+        observer.observe(this, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+    }
 }
 
-// Запускаем после загрузки DOM
-document.addEventListener('DOMContentLoaded', () => {
-    initRombusLists().catch(console.error);
-});
-
-export default initRombusLists;
+customElements.define('rombus-list', RombusList);
