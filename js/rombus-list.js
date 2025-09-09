@@ -1,6 +1,12 @@
 // Уникальный ID, чтобы не подключать CSS дважды
 const CSS_ID = 'romb-ol-styles';
-const CSS_PATH = './../css/rombus-list.css'; // путь к CSS
+// const CSS_PATH = './../css/rombus-list.css'; // путь к CSS
+// Получаем путь к текущему JS-файлу
+const currentDir = new URL('.', import.meta.url).pathname;
+
+// Формируем путь к CSS относительно текущего файла
+// Например: /project/js/ -> /project/css/
+const CSS_PATH = currentDir.replace(/js\/?$/, 'css/') + 'rombus-list.css';
 
 async function loadCSS() {
     // Проверяем, не загружен ли уже CSS
