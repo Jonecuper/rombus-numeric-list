@@ -2,9 +2,8 @@
     list-style: none;
     padding: 0;
     margin: 0;
-
-    /* Используем --start, переданную из JS */
-    counter-reset: step-counter calc(var(--start, 1) - 1);
+    counter-reset: romb-ol-counter calc(var(--start, 1) - 1);
+    box-sizing: border-box;
 }
 
 .romb-ol>li {
@@ -12,12 +11,40 @@
     grid-template-columns: 60px 1fr;
     gap: 10px;
     align-items: center;
-    /* align-items: start; */
     margin-bottom: 2rem;
+    min-width: 0;
 }
 
+/* Убираем margin-bottom у последнего элемента вложенного списка */
+.romb-ol .romb-ol>li:last-child {
+    margin-bottom: 0;
+}
+
+/* Вложенные списки — отступ только слева и сверху */
+.romb-ol ol.romb-ol {
+    margin-left: 48px;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    width: 100%;
+    max-width: none;
+    grid-column: 2;
+}
+
+/* Опционально: убрать margin-bottom у последнего вложенного списка в родителе */
+.romb-ol>li:last-child>ol.romb-ol {
+    margin-bottom: 0;
+}
+
+/* Для корректного переноса текста */
+.romb-ol>li> :not(.romb-ol__step-icon),
+.romb-ol>li> :not(.romb-ol__step-icon) * {
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
+/* Стиль ромба */
 .romb-ol .romb-ol__step-icon {
-    counter-increment: step-counter;
+    counter-increment: romb-ol-counter;
     position: relative;
     width: 45px;
     height: 45px;
@@ -32,8 +59,9 @@
     display: block;
 }
 
+/* Цифра внутри ромба */
 .romb-ol .romb-ol__step-icon::after {
-    content: counter(step-counter);
+    content: counter(romb-ol-counter);
     position: absolute;
     top: 50%;
     left: 50%;
@@ -42,4 +70,59 @@
     text-align: center;
     font-size: 1em;
     line-height: 1;
+}
+
+@media (max-width: 768px) {
+    .romb-ol ol.romb-ol {
+        margin-left: 32px;
+    }
+}
+
+@media (max-width: 576px) {
+    .romb-ol ol.romb-ol {
+        margin-left: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .romb-ol ol.romb-ol {
+        grid-column: 1 / -1;
+        margin-right: 0;
+        width: 100%;
+        max-width: none;
+    }
+    
+    .romb-ol ol.romb-ol>li {
+        display: grid;
+        /* grid-template-columns: 40px 1fr; */
+        gap: 18px;
+        align-items: center;
+        min-width: 0;
+    }
+    
+    .romb-ol ol.romb-ol .romb-ol__step-icon {
+        /* width: 40px;
+        height: 40px;
+        line-height: 40px; */
+    }
+    
+    .romb-ol ol.romb-ol>li> :not(.romb-ol__step-icon),
+    .romb-ol ol.romb-ol>li> :not(.romb-ol__step-icon) * {
+        min-width: 0;
+        overflow-wrap: break-word;
+    }
+
+    .romb-ol ol.romb-ol { 
+        margin-top: 2rem;
+    }
+
+    .romb-ol > li > .romb-ol {
+        margin-top: 1.5rem;
+    }
+}
+
+/* === Иерархическая нумерация при data-hierarchic="true" === */
+.romb-ol[data-hierarchic="true"] .romb-ol__step-icon::after,
+.romb-ol[data-hierarchic="true"] .romb-ol .romb-ol__step-icon::after {
+    content: counters(romb-ol-counter, ".");
 }
